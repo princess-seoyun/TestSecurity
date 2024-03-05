@@ -1,7 +1,9 @@
 package com.example.securityback.config;
 
 
+import com.example.securityback.jwt.JWTUtil;
 import com.example.securityback.jwt.LoginFilter;
+import org.apache.tomcat.Jar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,9 +21,11 @@ public class SecurityConfig {
 
     // AuthenticationManager 가 인자로 받을 AuthenticationConfiguration 객체 생성자 주입
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final JWTUtil jwtUtil;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
         this.authenticationConfiguration = authenticationConfiguration;
+        this.jwtUtil = jwtUtil;
     }
 
     // AuthenticationManager Bean 등록
@@ -61,7 +65,7 @@ public class SecurityConfig {
         // 필터 등록, at이 붙은 이유는 그 자리에 등록한다는 것
         // 로그인 필터를 등록하고, 그 위치를 어디로 할 것인지 2개 인자를 넣음
         http
-                .addFilterAt(new LoginFilter(authenticationManger(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManger(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         // 세션 설정
         http
