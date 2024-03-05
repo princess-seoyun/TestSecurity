@@ -17,9 +17,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity // Spring Security를 사용하는 웹 보안을 활성화
 public class SecurityConfig {
 
-    // AuthenicationManager Bean 등록
+    // AuthenticationManager 가 인자로 받을 AuthenticationConfiguration 객체 생성자 주입
+    private final AuthenticationConfiguration authenticationConfiguration;
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration) {
+        this.authenticationConfiguration = authenticationConfiguration;
+    }
+
+    // AuthenticationManager Bean 등록
     @Bean
-    public AuthenticationManager authenticationManger(AuthenticationConfiguration configuration) {
+    public AuthenticationManager authenticationManger(AuthenticationConfiguration configuration) throws Exception{
 
         return configuration.getAuthenticationManager();
     }
@@ -54,7 +61,7 @@ public class SecurityConfig {
         // 필터 등록, at이 붙은 이유는 그 자리에 등록한다는 것
         // 로그인 필터를 등록하고, 그 위치를 어디로 할 것인지 2개 인자를 넣음
         http
-                .addFilterAt(new LoginFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManger(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
 
         // 세션 설정
         http
