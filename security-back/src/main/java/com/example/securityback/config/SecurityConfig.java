@@ -1,17 +1,28 @@
 package com.example.securityback.config;
 
 
+import com.example.securityback.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity // Spring Security를 사용하는 웹 보안을 활성화
 public class SecurityConfig {
+
+    // AuthenicationManager Bean 등록
+    @Bean
+    public AuthenticationManager authenticationManger(AuthenticationConfiguration configuration) {
+
+        return configuration.getAuthenticationManager();
+    }
 
     // Spring Security에서 제공하는 비밀번호 인코딩을 위한 클래스
     // 사용자의 비밀번호를 안전하게 해싱(hash)하기 위해 사용되는 클래스
@@ -39,6 +50,11 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/", "/join").permitAll() // 로그인, 루트 경로, 회원가입 경로는 모든 사용자에게 허용
                         .requestMatchers("/admin").hasRole("ADMIN") // "/admin" 경로는 ADMIN 권한을 가진 사용자에게만 허용
                         .anyRequest().authenticated()); // 그 외의 모든 요청은 인증된 사용자만 접근가능
+
+        // 필터 등록, at이 붙은 이유는 그 자리에 등록한다는 것
+        // 로그인 필터를 등록하고, 그 위치를 어디로 할 것인지 2개 인자를 넣음
+        http
+                .addFilterAt(new LoginFilter(), UsernamePasswordAuthenticationFilter.class);
 
         // 세션 설정
         http
